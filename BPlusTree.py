@@ -1,27 +1,24 @@
-import math,struct
+import math
 from Node import Node
 
-class BplusTree:
+class BPlusTree:
     def __init__(self, order):
         self.root = Node(order) #creating an empty root node
 
-    def search(self, value):
+    def search(self, key):
         current = self.root #start from the root
         while not current.check_leaf: #cotinue search until u find a leaf node
             curr_values = current.values
             #search in that leaf node
-            for i in range(len(curr_values)):
-                    #when value equal to current value in the node, move right
-                if value == curr_values[i]:
+            for i in range(len(curr_values)):#when key equal to current value in the node, move right
+                if key == curr_values[i]:
                     current = current.pointers[i + 1]
                     break
-                elif value < curr_values[i]:
-                    #when value equal to current value in the node, move left
+                elif key < curr_values[i]:#when key equal to current value in the node, move left
                     current = current.pointers[i]
                     break
-                #if value > curr_values[i], then we just continue
-                elif i + 1 == len(current.values):
-                    #when reached the end
+                #if key > curr_values[i], then we just continue
+                elif i + 1 == len(current.values):#when reached the end
                     current = current.pointers[i + 1]
                     break
         return current
@@ -54,15 +51,15 @@ class BplusTree:
         #if root is the node that got split, create a new root
         if self.root == old_node:
             #create a new node
-            rootNode = Node(old_node.order, is_leaf=False)
+            root_node = Node(old_node.order, is_leaf=False)
             #give the values to the new root
-            rootNode.values = [value]
+            root_node.values = [value]
             #old and new_nodes now become children of the new root
-            rootNode.pointers = [old_node, new_node]
-            #set the root of the tree to be the new rootNode and also change parents to the root
-            self.root = rootNode
-            old_node.parent = rootNode
-            new_node.parent = rootNode
+            root_node.pointers = [old_node, new_node]
+            #set the root of the tree to be the new root_node and also change parents to the root
+            self.root = root_node
+            old_node.parent = root_node
+            new_node.parent = root_node
             return
         #when root is the node that is split, find the parent of the node that got split
         parent_Node = old_node.parent
@@ -98,12 +95,12 @@ class BplusTree:
                     self.update_parent(parent_Node, value_, new_parent)
 
      
-    # Print the tree(BFS)
+    # print the tree(BFS)
     def print_tree(self):
         explored = [self.root]
         levels = [0]
         while len(explored) != 0:
-            current = explored.pop(0)
+            current = explored.pop(0) #bfs
             level = levels.pop(0)
             if not current.check_leaf:
                 for item in current.pointers:
@@ -112,35 +109,8 @@ class BplusTree:
                     levels.append(level + 1)
             else:
                 print(current.file_offsets, current.values)
-
-    # Write the B+ tree index to a binary file
-    def write_to_file(self, file_path):
-        with open(file_path, 'wb') as file:
-            self.write_node_to_file(file, self.root)
-
-    # method for writing a node to the file
-    def write_node_to_file(self, file, node):
-        # Write node information to the file
-        file.write(struct.pack('I', node.order))
-        file.write(struct.pack('?', node.check_leaf))
-        file.write(struct.pack('I', len(node.values)))
-
-        for value, file_offsets in zip(node.values, node.file_offsets):
-            if isinstance(value, str):
-                value_bytes = value.encode('utf-8')
-            else:
-                value_bytes = value
-
-            file.write(struct.pack('25s', value_bytes))
-            file.write(struct.pack('I', len(file_offsets)))
-            for offset in file_offsets:
-                file.write(struct.pack('Q', offset))
-
-        # If it's an internal node, recursively write child nodes
-        if not node.check_leaf:
-            for child_node in node.pointers:
-                self.write_node_to_file(file, child_node)
-
+    
+    #lookup for a key in the data file 
     def lookup(self, key, file_path):
         key = (key[:25] + ' ' * (25 - len(key)))[:25] #for equating
         leaf_node = self.search(key)
@@ -156,3 +126,17 @@ class BplusTree:
             file.seek(offset[0])
             line = file.readline().decode('utf-8').strip()
         return line
+    
+    #delete a key from the index tree
+    def delete(self,key):
+        key = (key[:25] + ' ' * (25 - len(key)))[:25]
+        leaf_node = self.search(key)
+        for value in leaf_node.values:
+            if value == key:
+                index = leaf_node.values.index(value) #the inde where the key is present
+        
+        #delete the word from the index tree  
+        offset = leaf_node.file_offsets[index]
+        print(f'\n{key} is present at the offsets: {offset}') 
+        leaf_node.values.pop(index) 
+        leaf_node.file_offsets.pop(index)
