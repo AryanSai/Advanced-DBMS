@@ -6,6 +6,7 @@ def build_bplus_tree_index(file_path, bplustree):
     with open(file_path, 'rb') as file:
         file_offset = 0 #intial
         for line in file:
+            # print(line)
             line = str(line, 'utf-8').strip()
             value = (line[:25] + ' ' * (25 - len(line)))[:25] #truncate or pad to 25 characters
             bplustree.insert(value, file_offset)
@@ -39,9 +40,11 @@ def load_binfile():
 def main():            
     order = 4 #number of elements in each node
     path='input.txt'
+    
     bplustree = BPlusTree(order)
-    print('\nB+ Tree created......')
+    
     build_bplus_tree_index(path, bplustree)
+    print('\nB+ Tree created......')
     
     print('\nBinary file created......')
     create_binfile(bplustree)

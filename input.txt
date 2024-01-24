@@ -11,7 +11,6 @@ bat
 cat
 girl
 kit
-sai
 cracked
 car
 cute
@@ -19,8 +18,6 @@ gala
 zero
 rat
 serendipity
-mellifluous
-resilience
 quixotic
 petrichor
 epiphany
@@ -32,11 +29,9 @@ capitulate
 perfidious
 ubiquitous
 garrulous
-obfuscate
 plethora
 nebulous
 cacophony
-ephemeral
 insidious
 pernicious
 quagmire
@@ -44,7 +39,6 @@ vicarious
 supercilious
 peculiar
 irresolute
-inscrutable
 resplendent
 asinine
 taciturn
@@ -59,33 +53,20 @@ sonorous
 myriad
 serene
 penchant
-ephemeral
 obdurate
 mellifluous
 quandary
 enigmatic
 aberration
-mellifluous
-luminous
 garrulous
 incandescent
 disparate
-ephemeral
-mellifluous
-inscrutable
-quintessential
-mellifluous
 resilience
 luminous
-mellifluous
-ineffable
-resilience
 ephemeral
-quixotic
 zwitter
 zwitterion
 zwitterionic
-obfuscate
 languid
 grammaticality
 grammatically
@@ -105,10 +86,6 @@ grammatology
 Grammatophyllum
 gramme
 grammel
-inscrutable
-mellifluous
-resilience
-luminous
 nonpersuasible
 grandnephew
 grand-nephew
@@ -151,34 +128,12 @@ nonpertinent
 nonpertinently
 nonperturbable
 nonperturbing
-quintessential
-ephemeral
-serendipity
-mellifluous
-resilience
-ineffable
-luminous
 nebulous
-mellifluous
-resilience
-ephemeral
-inscrutable
 quintessential
 obfuscate
-mellifluous
-resilience
-luminous
-ineffable
 pernicious
-quixotic
-mellifluous
-resilience
-ephemeral
 inscrutable
 vicarious
-serendipity
-mellifluous
-resilience
 water
 war
 open
@@ -198,7 +153,6 @@ Line number three.
 Just adding more lines.
 Testing strings.
 Creating a large file.
-Adding more content.
 String number eight.
 Continue adding lines.
 Just a few more.
@@ -244,7 +198,6 @@ Fiftieth string.
 Halfway through.
 Fifty-two follows.
 String number fifty-three.
-Still adding content.
 Fifty-five strings.
 Almost at sixty.
 Fifty-seven on the list.
@@ -262,7 +215,6 @@ Sixty-eight follows.
 Almost at seventy.
 Seventieth string.
 String number seventy-one.
-Still adding content.
 Seventy-three and counting.
 Almost at three-quarters.
 Seventy-fifth string.
@@ -291,10 +243,8 @@ curtays
 curtal
 curtalax
 Ninety-three is here.
-Still adding content.
 Almost to the finish.
 String number ninety-six.
 Ninety-seven follows.
 Almost at one hundred.
 Ninety-nine strings.
-One hundredth string.

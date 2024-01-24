@@ -3,7 +3,7 @@ class Node:
     def __init__(self, order, is_leaf=True):
         self.order = order
         self.pointers = []   #references for internal nodes
-        self.nextLeafNode = None #reference to next node
+        self.next_leaf_node = None #reference to next node
         self.parent = None #reference to parent node
         self.check_leaf = is_leaf 
         self.values = [] #for leaf nodes
