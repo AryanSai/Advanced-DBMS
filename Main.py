@@ -6,7 +6,6 @@ def build_bplus_tree_index(file_path, bplustree):
     with open(file_path, 'rb') as file:
         file_offset = 0 #intial
         for line in file:
-            # print(line)
             line = str(line, 'utf-8').strip()
             value = (line[:25] + ' ' * (25 - len(line)))[:25] #truncate or pad to 25 characters
             bplustree.insert(value, file_offset)
@@ -23,7 +22,6 @@ def lookup(bplustree,key,path):
 # serialize the B+ tree
 def create_binfile(bplustree):
         serialized_tree = pickle.dumps(bplustree)
-        
         # save the serialized data to a binary file
         with open("bplus_tree.bin", "wb") as binary_file:
             binary_file.write(serialized_tree)
@@ -32,14 +30,13 @@ def create_binfile(bplustree):
 def load_binfile():
         with open("bplus_tree.bin", "rb") as binary_file:
             serialized_tree = binary_file.read()
-
         # deserialize the B+ tree using pickle
         bplus_tree = pickle.loads(serialized_tree)  
         return bplus_tree
 
 def main():            
     order = 4 #number of elements in each node
-    path='input.txt'
+    path='input2.txt'
     
     bplustree = BPlusTree(order)
     
@@ -60,7 +57,7 @@ def main():
     bplus_tree.print_tree()
     
     print('\nDeleting a key from the B+ tree......')    
-    bplus_tree.delete('sai')
+    bplus_tree.delete('Aryan Sai')
     
     print('\nPrinting the B+ tree after deletion......')
     bplus_tree.print_tree()

@@ -19,40 +19,28 @@ class Node:
 class BPlusTree:
     def __init__(self, order):
         self.root = Node(order) #creating an empty root node
-    
+        
     def search(self, key):
         current = self.root #start from the root
         while not current.check_leaf: #cotinue search until u find a leaf node
-            curr_values = current.values
-            #search in that leaf node
-            for i in curr_values:#when key equal to current value in the node, move right
-                if key == i:
-                    current = current.pointers[curr_values.index(i) + 1]
-                    break
-                elif key < i:#when key less than current value in the node, move left
-                    current = current.pointers[curr_values.index(i)]
-                    break
-                #if key > curr_values[i], then we just continue
-                elif curr_values.index(i) + 1 == len(current.values):#when reached the end
-                    current = current.pointers[curr_values.index(i) + 1]
-                    break
-        return current
-    # Insert at the leaf   
-    def insert_at_leaf(self,leaf_node, key, file_offset):
+            index = 0
+            # find the index where the key belongs in the current node
+            while index < len(current.values) and key >= current.values[index]:
+                index += 1
+            current = current.pointers[index]  #move to the next level
+        return current 
+
+    def insert_at_leaf(self, leaf_node, key, file_offset):
         if leaf_node.values:
-            curr_values=leaf_node.values
-            for i in range(len(curr_values)):
-                if key < curr_values[i]:
-                     #when key less than the curr_leaf key, insert in the sorting order
-                    leaf_node.values=leaf_node.values[:i]+[key]+leaf_node.values[i:]
-                    leaf_node.file_offsets = leaf_node.file_offsets[:i] + [[file_offset]] + leaf_node.file_offsets[i:]
-                    break
-                #if key > curr_values[i], then we just continue
-                elif i + 1 == len(curr_values): #when greater, append to the lists
-                    leaf_node.values.append(key)
-                    leaf_node.file_offsets.append([file_offset])
-                    break
-        else: #when the leaf is empty
+            index = 0
+            # find the correct index for the new key in the leaf node
+            while index < len(leaf_node.values) and key >= leaf_node.values[index]:
+                index += 1
+            # insert the new key and corresponding file offset at the found index
+            leaf_node.values.insert(index, key)
+            leaf_node.file_offsets.insert(index, [file_offset])
+        else:
+            # if the leaf node is empty, simply add the new key and file offset
             leaf_node.values = [key]
             leaf_node.file_offsets = [[file_offset]]
             
@@ -60,26 +48,26 @@ class BPlusTree:
     def insert(self, value, file_offset):
         # find the location where the value fits
         leaf_node = self.search(value)
-        # insert the value in the node
+        # insert the value in the leaf node
         self.insert_at_leaf(leaf_node, value, file_offset)
         # splitting the node when size exceeds the order
         if len(leaf_node.values) == leaf_node.order:
             self.split_node(leaf_node)
     
-    # used for updating the parent after a split operation
     def split_node(self, node):
-        new_node = Node(node.order, is_leaf=True)  # create a new leaf node
-        new_node.parent = node.parent  # Set the parent
-        mid = math.ceil(node.order / 2) - 1
-        # move the second half of data to the new node
-        new_node.values = node.values[mid + 1:]
-        new_node.file_offsets = node.file_offsets[mid + 1:]
-        # let the first half of data remain with the old node
-        node.values = node.values[:mid + 1]
-        node.file_offsets = node.file_offsets[:mid + 1]
-        # connect the old node to the new node
+        # create a new leaf node and set its parent
+        new_node = Node(node.order, is_leaf=True)
+        new_node.parent = node.parent
+        split_point = len(node.values) // 2
+        # move the latter half of data to the new node
+        new_node.values = node.values[split_point:]
+        new_node.file_offsets = node.file_offsets[split_point:]
+        # update the original node to keep the first half of data
+        node.values = node.values[:split_point]
+        node.file_offsets = node.file_offsets[:split_point]
+        # link the old node to the new node
         node.next_leaf_node = new_node
-        # update the parent with the new node
+        # update the parent after the split
         self.update_parent(node, new_node.values[0], new_node)
 
     def update_root(self,old_node,value,new_node):
