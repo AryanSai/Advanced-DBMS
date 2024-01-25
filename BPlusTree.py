@@ -1,6 +1,21 @@
-import math
-from Node import Node
+# Each node except root can have a maximum of M children and at least ceil(M/2) children.
+# Each node can contain a maximum of M – 1 keys and a minimum of ceil(M/2) – 1 keys.
+# The root has at least two children and atleast one search key.
+# While insertion overflow of the node occurs when it contains more than M – 1 search key values.
 
+import math
+
+# Node creation
+class Node:
+    def __init__(self, order, is_leaf=True):
+        self.order = order
+        self.pointers = []   #references for internal nodes
+        self.next_leaf_node = None #reference to next node
+        self.parent = None #reference to parent node
+        self.check_leaf = is_leaf 
+        self.values = [] 
+        self.file_offsets = [] #offsets of the file
+        
 class BPlusTree:
     def __init__(self, order):
         self.root = Node(order) #creating an empty root node
@@ -22,17 +37,35 @@ class BPlusTree:
                     current = current.pointers[curr_values.index(i) + 1]
                     break
         return current
-    
+    # Insert at the leaf   
+    def insert_at_leaf(self,leaf_node, key, file_offset):
+        if leaf_node.values:
+            curr_values=leaf_node.values
+            for i in range(len(curr_values)):
+                if key < curr_values[i]:
+                     #when key less than the curr_leaf key, insert in the sorting order
+                    leaf_node.values=leaf_node.values[:i]+[key]+leaf_node.values[i:]
+                    leaf_node.file_offsets = leaf_node.file_offsets[:i] + [[file_offset]] + leaf_node.file_offsets[i:]
+                    break
+                #if key > curr_values[i], then we just continue
+                elif i + 1 == len(curr_values): #when greater, append to the lists
+                    leaf_node.values.append(key)
+                    leaf_node.file_offsets.append([file_offset])
+                    break
+        else: #when the leaf is empty
+            leaf_node.values = [key]
+            leaf_node.file_offsets = [[file_offset]]
+            
     # insert operation
     def insert(self, value, file_offset):
         # find the location where the value fits
         leaf_node = self.search(value)
         # insert the value in the node
-        leaf_node.insert_at_leaf(value, file_offset)
+        self.insert_at_leaf(leaf_node, value, file_offset)
         # splitting the node when size exceeds the order
         if len(leaf_node.values) == leaf_node.order:
             self.split_node(leaf_node)
-
+    
     # used for updating the parent after a split operation
     def split_node(self, node):
         new_node = Node(node.order, is_leaf=True)  # create a new leaf node
@@ -49,23 +82,26 @@ class BPlusTree:
         # update the parent with the new node
         self.update_parent(node, new_node.values[0], new_node)
 
-
+    def update_root(self,old_node,value,new_node):
+        #create a new node
+        root_node = Node(old_node.order, is_leaf=False)
+        #give the values to the new root
+        root_node.values = [value]
+        #old and new_nodes now become children of the new root
+        root_node.pointers = [old_node, new_node]
+        #set the root of the tree to be the new root_node and also change parents to the root
+        self.root = root_node
+        old_node.parent = root_node
+        new_node.parent = root_node
+        return
+    
     #used for updating the parent after a split operation
     def update_parent(self, old_node, value, new_node):
         #if root is the node that got split, create a new root
         if self.root == old_node:
-            #create a new node
-            root_node = Node(old_node.order, is_leaf=False)
-            #give the values to the new root
-            root_node.values = [value]
-            #old and new_nodes now become children of the new root
-            root_node.pointers = [old_node, new_node]
-            #set the root of the tree to be the new root_node and also change parents to the root
-            self.root = root_node
-            old_node.parent = root_node
-            new_node.parent = root_node
+            self.update_root(old_node,value,new_node)
             return
-        #when root is the node that is split, find the parent of the node that got split
+        #when root is not the node that is split, find the parent of the node that got split
         parent_node = old_node.parent
         temp = parent_node.pointers
         for i in range(len(temp)):
@@ -139,7 +175,6 @@ class BPlusTree:
         for value in leaf_node.values:
             if value == key:
                 index = leaf_node.values.index(value) #the index where the key is present
-        
         #delete the word from the index tree  
         offset = leaf_node.file_offsets[index] 
         print(f'\n{key} is present at the offsets: {offset}') 
