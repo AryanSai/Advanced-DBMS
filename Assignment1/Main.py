@@ -36,7 +36,7 @@ def load_binfile():
 
 def main():            
     order = 4 #number of elements in each node
-    path='input2.txt'
+    path='/home/aryan/Desktop/MTech/DBMS(P)/Assignment1/input2.txt'
     
     bplustree = BPlusTree(order)
     
