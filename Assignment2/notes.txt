@@ -1,0 +1,13 @@
+When using the parse() function a tuple of Statement instances is returned:
+hence, parsed_query = sqlparse.parse(query)[0] #0 since only one query
+
+
+
+# for multiple stamtments:
+# # stmts=sqlparse.split(query)
+# # print(stmts)
+
+# # for i in parsed:
+# #     if i.get_type() == 'SELECT':
+# #             print('se')
+            
