@@ -19,7 +19,7 @@ def lookup(bplustree,key,path):
     else:
         print(f"\nKey '{key}' not found in the B+ tree index.")
 
-# serialize the B+ tree
+# serialize the B+ tree using pickle package
 def create_binfile(bplustree):
         serialized_tree = pickle.dumps(bplustree)
         # save the serialized data to a binary file
