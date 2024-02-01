@@ -1,0 +1,21 @@
+customer_id, customer_name, email, age, city
+1, John Doe, john@example.com, 25, New York
+2, Jane Smith, jane@example.com, 30, Los Angeles
+3, Bob Johnson, bob@example.com, 22, Chicago
+4, Alice Williams, alice@example.com, 28, San Francisco
+5, Michael Brown, michael@example.com, 35, Boston
+6, Emily Davis, emily@example.com, 29, Seattle
+7, David Miller, david@example.com, 27, Austin
+8, Emma Wilson, emma@example.com, 32, Denver
+9, Richard Turner, richard@example.com, 31, Miami
+10, Olivia Taylor, olivia@example.com, 26, Atlanta
+11, William Clark, william@example.com, 33, Dallas
+12, Sophia Moore, sophia@example.com, 24, Houston
+13, Christopher Lee, christopher@example.com, 28, Phoenix
+14, Mia Walker, mia@example.com, 34, Philadelphia
+15, Benjamin White, benjamin@example.com, 23, San Diego
+16, Harper Anderson, harper@example.com, 30, Portland
+17, Ethan Harris, ethan@example.com, 29, Minneapolis
+18, Ava Martin, ava@example.com, 26, Orlando
+19, James Robinson, james@example.com, 32, Charlotte
+20, Lily Martinez, lily@example.com, 27, Nashville

@@ -50,15 +50,16 @@ def main():
     bplus_tree = load_binfile()
     
     print('\nLooking up the B+ tree......')    
-    lookup(bplus_tree,'xylo',path)
-    lookup(bplus_tree,'ggg',path)
+    lookup(bplus_tree,'Aryan Sai',path)
+    lookup(bplus_tree,'Sairam',path)
     
     print('\nPrinting the B+ tree......')
     bplus_tree.print_tree()
     
     print('\nDeleting a key from the B+ tree......')    
     bplus_tree.delete('Aryan Sai')
-    
+    bplus_tree.delete('Akshay Guptha')
+
     print('\nPrinting the B+ tree after deletion......')
     bplus_tree.print_tree()
     

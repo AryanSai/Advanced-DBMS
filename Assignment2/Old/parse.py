@@ -9,7 +9,14 @@ def main():
 
     #format the query
     query = sqlparse.format(query, reindent=True, keyword_case='upper')
+    
+    query = query.replace('\n', ' ')
 
+    print(query)
+
+    tokens=query.split(' ')
+    print(tokens.index('SELECT'))
+    
     parsed_query = sqlparse.parse(query)[0]
     tokens = parsed_query.tokens
 
