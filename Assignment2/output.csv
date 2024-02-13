@@ -1,16 +1,11 @@
-name
-Sarah Wilson
-James Taylor
-Emma Anderson
-Liam Martinez
-Olivia Garcia
-Noah Rodriguez
-Ava Hernandez
-William Lopez
-Sophia Martinez
-Alexander Lee
-Isabella Rodriguez
-Mason Hernandez
-Evelyn Lopez
-Michael Lee
-Abigail Garcia
+reg_no,name,class,percentage
+3,Michael Johnson,I MTech,75
+7,James Taylor,I MTech,75
+19,Michael Lee,I MTech,75
+15,Alexander Lee,I MTech,77
+11,Noah Rodriguez,I MTech,78
+17,Mason Hernandez,I MTech,79
+1,John Doe,I MTech,80
+9,Liam Martinez,I MTech,80
+13,William Lopez,I MTech,82
+5,David Lee,I MTech,85

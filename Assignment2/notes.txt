@@ -1,13 +1,32 @@
-When using the parse() function a tuple of Statement instances is returned:
-hence, parsed_query = sqlparse.parse(query)[0] #0 since only one query
 
-
-
-# for multiple stamtments:
-# # stmts=sqlparse.split(query)
-# # print(stmts)
-
-# # for i in parsed:
-# #     if i.get_type() == 'SELECT':
-# #             print('se')
-            
+def execute_select1(reader, parsed_query, columns):
+    select_clause = parsed_query['SELECT']
+    print("SELECT clause:", select_clause)
+    where_clause = parsed_query.get('WHERE')  # get WHERE clause from parsed query
+    print("WHERE clause:", where_clause)
+    if where_clause:
+        column, operator, value = parse_where_condition(where_clause)
+        print(column, value)
+        # get the index of the column specified in the WHERE clause
+        column_index = columns.index(column)
+    
+    with open('output.csv', 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        # writing the header
+        if select_clause[0] == '*' or select_clause[0] == 'ALL':
+            star = 1  
+            csvwriter.writerow(columns)
+        else:
+            star = 0  
+            csvwriter.writerow(select_clause)
+        # writing the data
+        for row in reader:
+            # apply WHERE clause if specified
+            if (where_clause and do_operation(operator,row[column_index],value)) or where_clause == None:
+                    if star:  # handling SELECT * clause
+                        csvwriter.writerows(reader)
+                    else:
+                        selected_row = [row[columns.index(attr)] for attr in select_clause]
+                        csvwriter.writerow(selected_row) 
+     
+    print('-----------Output written to output.csv-----------')            
