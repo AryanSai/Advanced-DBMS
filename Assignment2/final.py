@@ -200,18 +200,16 @@ def execute_from(parsed_query):
             execute_select(data,parsed_query,columns,0)
     
         
-# name, class
 def main():
-    # sql_query = "SELECT * FROM student.csv WHERE percentage >= 80 ORDER BY percentage ASC"
-    sql_query = "SELECT * FROM student.csv"
-    
     # give single quotes and no ;
-    sql_query = "SELECT * FROM student.csv"
-    # sql_query = "SELECT name, class FROM student.csv"
     
+    # sql_query = "SELECT * FROM student.csv WHERE percentage >= 80 ORDER BY percentage ASC"
+    # sql_query = "SELECT * FROM student.csv ORDER BY percentage DESC"
+    # sql_query = "SELECT * FROM student.csv"
+    # sql_query = "SELECT name, class FROM student.csv WHERE percentage >= 80"
+    sql_query = "SELECT name, class FROM student.csv WHERE class = I MTech"
     # sql_query = "SELECT customer_name, balance FROM customer.csv NATURAL JOIN account.csv WHERE balance >= 100000 ORDER BY balance DESC"
     # sql_query = "SELECT customer_name, account_number FROM customer.csv CROSS JOIN account.csv"
-    
     parsed_query = parse_query(sql_query)
     print("Parsed Query:", parsed_query)
     execute_from(parsed_query)
