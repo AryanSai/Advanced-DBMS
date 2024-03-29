@@ -1,0 +1,8 @@
+orders	26095	1.5e+06
+lineitem	112503	6.000944e+06
+region	1	5
+nation	1	25
+supplier	222	10000
+part	4097	200000
+partsupp	17451	800000
+customer	3585	150000

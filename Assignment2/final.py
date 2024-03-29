@@ -31,7 +31,7 @@ def parse_where_condition(where_clause):
         column_name = match.group(1)
         operator = match.group(2)
         comparison_value = match.group(3)
-        # Remove single quotes from comparison value if present
+        # remove single quotes from comparison value if present
         comparison_value = comparison_value.strip("'")
         return column_name, operator, comparison_value
     else:
@@ -65,8 +65,8 @@ def cartesian(file1,file2):
         data.append(header1+header2)
         
         for row1 in reader1:
-            file2_csv.seek(0)  # Reset file2 pointer
-            next(reader2)  # Skip header row again
+            file2_csv.seek(0)  # reset file2 pointer
+            next(reader2)  # skip header row again
             for row2 in reader2:
                 merged_row = [value.strip() for value in row1] + [value.strip() for value in row2]
                 data.append(merged_row)
@@ -75,7 +75,7 @@ def cartesian(file1,file2):
 def natural_join(file1, file2):
     data = []
 
-    # Read data from file1 and file2
+    # read data from file1 and file2
     with open(file1, 'r') as file1_csv:
         reader1 = csv.reader(file1_csv)
         header1 = [col.strip() for col in next(reader1)]
@@ -198,7 +198,6 @@ def execute_from(parsed_query):
             print('The columns in the table are: ',columns)
             data = list(reader)
             execute_select(data,parsed_query,columns,0)
-    
         
 def main():
     # give single quotes and no ;
