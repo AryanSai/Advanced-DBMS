@@ -69,51 +69,60 @@ enum lockStatus
 unordered_map<string, list<lockable_resource *> *> lock_table;
 
 // changed the return type to bool for ease
-// we are assuming that the txns are ordered acc to time of their arrival
-bool unlock(string resource_name, uint32_t txn_id)
+bool unlock(std::string resource_name, std::uint32_t txn_id)
 {
-  // check if the resource_name is even there in the lock_table
-  if (lock_table.find(resource_name) == lock_table.end())
+  // check if the data item even exists in the lock table
+  // if it exists, check if it holds a non-empty list of lock records
+  if (lock_table.find(resource_name) == lock_table.end() || lock_table[resource_name]->size() == 0)
   {
-    cout << "Cannot unlock a non-existent lock!";
+    cerr << "Cannot unlock a non-existent lock!" << endl;
     return false;
   }
-  // if it is there, then get its corresponding list
-  list<lockable_resource *> *res_list = lock_table[resource_name];
-  lockable_resource *res;
-  // check if the required txn_id is in the res_list
-  for (auto i = res_list->begin(); i != res_list->end(); i++)
+
+  // when the txn_id is not in the list
+  if (lock_table.find(resource_name) == lock_table.end())
   {
-    res = *i;
-    uint32_t res_txn_id = res->getTxnId();
-    // once the txn_id is found, delete it from the list => unlock
-    if (res_txn_id == txn_id)
+    cerr << "Invalid Transaction Id!" << endl;
+    return false;
+  }
+
+  lockable_resource *record;
+  list<lockable_resource *>::iterator iteratorr = lock_table[resource_name]->begin();
+  list<lockable_resource *>::iterator del_iter;
+  bool all_are_shared = true;
+
+  int i;
+  // Search for the txn that requested the unlock
+  for (i = 0, record = *iteratorr; iteratorr != lock_table[resource_name]->end() && txn_id != record->getTxnId(); iteratorr++, i++, record = *iteratorr)
+  {
+    if (record->getLockType() != lockType::SHARED)
+      all_are_shared = false;
+  }
+  // Store the iterator position that points to the record to be deleted
+  del_iter = iteratorr;
+  iteratorr++;
+
+  // A lock is granted only if the previous locks are all shared
+  if (all_are_shared && iteratorr != lock_table[resource_name]->end())
+  {
+    record = *iteratorr;
+    if (record->getLockType() == lockType::EXCLUSIVE)
     {
-      res_list->erase(i);
-      delete res;
-      if (res_list->empty())
-        lock_table.erase(resource_name);
-      break;
+      if (iteratorr == ++lock_table[resource_name]->begin())
+        record->setLockStatus(lockStatus::GRANTED);
     }
-  }
-  // if the first txn in the remaining list is exclusive, grant it
-  // if the first txn in the remaining list is shared, grant all waiting shared
-  res = *res_list->begin(); // the first in the list
-  if (res->getLockType() == lockType::EXCLUSIVE && res->getStatus() == lockStatus::WAITING)
-  {
-    res->setLockStatus(lockStatus::GRANTED);
-  }
-  else
-  {
-    for (auto i = res_list->begin(); i != res_list->end(); i++)
+    else
     {
-      res = *i;
-      if (res->getLockType() == lockType::SHARED && res->getStatus() == lockStatus::WAITING)
+      // grant all WAITING shared locks
+      for (; iteratorr != lock_table[resource_name]->end() && record->getLockType() == lockType::SHARED && record->getStatus() == lockStatus::WAITING;
+           iteratorr++, record = *iteratorr)
       {
-        res->setLockStatus(lockStatus::GRANTED);
+        record->setLockStatus(lockStatus::GRANTED);
       }
     }
   }
+  // remove the record from the record list
+  lock_table[resource_name]->erase(del_iter);
   return true;
 }
 
