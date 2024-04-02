@@ -123,6 +123,11 @@ bool unlock(std::string resource_name, std::uint32_t txn_id)
   }
   // remove the record from the record list
   lock_table[resource_name]->erase(del_iter);
+
+  //if the record list becomes empty, delete the record from the table
+  if (lock_table[resource_name]->size() == 0)
+    lock_table.erase(resource_name);
+    
   return true;
 }
 
