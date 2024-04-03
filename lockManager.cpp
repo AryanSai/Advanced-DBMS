@@ -79,13 +79,6 @@ bool unlock(std::string resource_name, std::uint32_t txn_id)
     return false;
   }
 
-  // when the txn_id is not in the list
-  if (lock_table.find(resource_name) == lock_table.end())
-  {
-    cerr << "Invalid Transaction Id!" << endl;
-    return false;
-  }
-
   lockable_resource *record;
   list<lockable_resource *>::iterator iteratorr = lock_table[resource_name]->begin();
   list<lockable_resource *>::iterator del_iter;
@@ -98,16 +91,25 @@ bool unlock(std::string resource_name, std::uint32_t txn_id)
     if (record->getLockType() != lockType::SHARED)
       all_are_shared = false;
   }
-  // Store the iterator position that points to the record to be deleted
+
+  // when txn id doesn't exist in the list
+  if (iteratorr == lock_table[resource_name]->end())
+  {
+    cerr << "Invalid Txn Id!" << endl;
+    return false;
+  }
+
+  // store the iterator position that points to the record to be deleted
   del_iter = iteratorr;
   iteratorr++;
 
-  // A lock is granted only if the previous locks are all shared
+  // lock is granted only if the previous locks are all shared
+  // iteratorr != lock_table[resource_name]->end() to handle the case when only one lock exists
   if (all_are_shared && iteratorr != lock_table[resource_name]->end())
   {
     record = *iteratorr;
     if (record->getLockType() == lockType::EXCLUSIVE)
-    {
+    { // only 'this' lock exists before the WAITING EXCLUSIVE, hence grant it and unlock 'this'
       if (iteratorr == ++lock_table[resource_name]->begin())
         record->setLockStatus(lockStatus::GRANTED);
     }
@@ -124,10 +126,10 @@ bool unlock(std::string resource_name, std::uint32_t txn_id)
   // remove the record from the record list
   lock_table[resource_name]->erase(del_iter);
 
-  //if the record list becomes empty, delete the record from the table
+  // if the record list becomes empty, delete the record from the table
   if (lock_table[resource_name]->size() == 0)
     lock_table.erase(resource_name);
-    
+
   return true;
 }
 
@@ -149,12 +151,12 @@ bool lock(string resource_name, uint32_t txn_id, uint8_t lock_type)
     {
       // check if the requesting transaction already in the list, then unlock in the end
       list<lockable_resource *>::iterator i;
-      int unlocked = 0;
+      int exists = 0;
       for (i = lock_table[resource_name]->begin(); i != lock_table[resource_name]->end(); i++)
       {
         if ((*i)->getTxnId() == txn_id)
         {
-          unlocked = 1;
+          exists = 1;
           break;
         }
       }
@@ -188,7 +190,7 @@ bool lock(string resource_name, uint32_t txn_id, uint8_t lock_type)
       lock_table[resource_name]->emplace_back(lr);
 
       // unlock the previous lock issued by the txn
-      if (unlocked == 1)
+      if (exists == 1)
         unlock(resource_name, txn_id);
     }
   } // catch memory allocation exceptions
@@ -255,11 +257,10 @@ int main()
     case 1:
       cout << "Name of the resource: ";
       cin >> resource_name;
-      cout << "Transaction ID: ";
-      // cin >> txn_id;
+      cout << "Txn ID: ";
       while (!(cin >> txn_id)) // when a non-numeric values is entered
       {
-        cout << "Invalid input. Please enter a valid transaction ID: ";
+        cout << "Invalid input. Please enter a valid Txn ID: ";
         cin.clear();                                         // clear error flags
         cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard invalid input
       }
@@ -280,6 +281,7 @@ int main()
         else
           cout << "Enter a valid lock! (S/X)\n";
       }
+      cout << "-------------------------------------------------------" << endl;
       if (!lock(resource_name, txn_id, lock_type))
         cout << "Lock error!" << endl;
       else
@@ -287,10 +289,11 @@ int main()
       print_locktable();
       break;
     case 2:
-      cout << "Name of the resource: ";
+      cout << "Resource Name: ";
       cin >> resource_name;
       cout << "Transaction ID: ";
       cin >> txn_id;
+      cout << "-------------------------------------------------------" << endl;
       if (!unlock(resource_name, txn_id))
         cout << "Unlock error!" << endl;
       else
@@ -301,6 +304,10 @@ int main()
       print_locktable();
       break;
     case 4:
+      cout << "-------------------------------------------------------" << endl;
+      cout << "--------------------------Bye--------------------------" << endl;
+      cout << "-------------------------------------------------------" << endl;
+
       return 0;
     default:
       cout << "Please enter a valid option (1, 2, 3, or 4)!" << endl;
