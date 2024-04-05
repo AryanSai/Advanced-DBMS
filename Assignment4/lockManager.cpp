@@ -1,6 +1,5 @@
 /*
-Written by:
-    Aryan Sai Arvapelly, Reg. No. 23352
+Aryan Sai Arvapelly, Reg. No. 23352
 
 Goal : Build a lock manager.
 The lock manager should support the following capabilities:
@@ -71,61 +70,51 @@ unordered_map<string, list<lockable_resource *> *> lock_table;
 // changed the return type to bool for ease
 bool unlock(std::string resource_name, std::uint32_t txn_id)
 {
-  // check if the data item even exists in the lock table
-  // if it exists, check if it holds a non-empty list of lock records
-  if (lock_table.find(resource_name) == lock_table.end() || lock_table[resource_name]->size() == 0)
+  // check if the resource_name even exists in the lock table
+  if (lock_table.find(resource_name) == lock_table.end())
   {
     cerr << "Cannot unlock a non-existent lock!" << endl;
     return false;
   }
 
-  lockable_resource *record;
-  list<lockable_resource *>::iterator iteratorr = lock_table[resource_name]->begin();
-  list<lockable_resource *>::iterator to_delete;
+  // resource_name exists
+  // create an iterator for the list
+  list<lockable_resource *>::iterator i;
   bool all_are_shared = true;
 
   // search for the txn that requested the unlock
   // and also check if all the txns till the requestee are shared
-  for (record = *iteratorr; iteratorr != lock_table[resource_name]->end() && txn_id != record->getTxnId(); iteratorr++, record = *iteratorr)
+  for (i = lock_table[resource_name]->begin(); i != lock_table[resource_name]->end() && txn_id != (*i)->getTxnId(); i++)
   {
-    if (record->getLockType() != lockType::SHARED)
+    if ((*i)->getLockType() != lockType::SHARED)
       all_are_shared = false;
   }
 
-  // store the iterator position that points to the record to be deleted
-  to_delete = iteratorr;
-
   // when txn id doesn't even exist in the list
-  if (to_delete == lock_table[resource_name]->end())
+  if (i == lock_table[resource_name]->end())
   {
     cerr << "Invalid Txn Id!" << endl;
     return false;
   }
 
+  // store the iterator position that points to the record to be deleted
+  list<lockable_resource *>::iterator to_delete;
+  to_delete = i;
+
   // for updating other locks affected by the unlock
-  iteratorr++;
+  i++;
 
   // lock is GRANTED only if the previous locks are all SHARED
-  // iteratorr != lock_table[resource_name]->end() to handle the case when only one lock exists
-  if (all_are_shared && iteratorr != lock_table[resource_name]->end())
+  // i != lock_table[resource_name]->end() to handle the case when only one lock exists
+  if (all_are_shared && i != lock_table[resource_name]->end())
   {
-    record = *iteratorr;
-    // if the next is an record EXCLUSIVE one
-    // only the requestee lock exists before the WAITING EXCLUSIVE, hence grant it and unlock the requestee
-    // that is, it is the first in the list now
-    if (record->getLockType() == lockType::EXCLUSIVE && iteratorr == ++lock_table[resource_name]->begin())
-    {
-      record->setLockStatus(lockStatus::GRANTED);
-    }
+    // the first in the list now is WAITING EXCLUSIVE, grant it
+    if ((*i)->getLockType() == lockType::EXCLUSIVE && i == ++lock_table[resource_name]->begin())
+      (*i)->setLockStatus(lockStatus::GRANTED);
     else
-    {
       // grant all WAITING SHARED locks
-      for (; iteratorr != lock_table[resource_name]->end() && record->getLockType() == lockType::SHARED && record->getStatus() == lockStatus::WAITING;
-           iteratorr++, record = *iteratorr)
-      {
-        record->setLockStatus(lockStatus::GRANTED);
-      }
-    }
+      for (; i != lock_table[resource_name]->end() && (*i)->getLockType() == lockType::SHARED && (*i)->getStatus() == lockStatus::WAITING; i++)
+        (*i)->setLockStatus(lockStatus::GRANTED);
   }
 
   // remove the record from the record list
@@ -140,70 +129,66 @@ bool unlock(std::string resource_name, std::uint32_t txn_id)
 
 bool lock(string resource_name, uint32_t txn_id, uint8_t lock_type)
 {
-  uint8_t lock_status = lockStatus::WAITING; // default is WAITING
-  try
+  // if resource not in the lock_table, add it to the table
+  if (lock_table.find(resource_name) == lock_table.end())
   {
-    // if resource not in the lock_table, add it to the table
-    if (lock_table.find(resource_name) == lock_table.end())
-    {
-      lockable_resource *lr = new lockable_resource(txn_id, lock_type, lockStatus::GRANTED);
-      list<lockable_resource *> *lst = new list<lockable_resource *>;
-      lst->emplace_back(lr);
-      lock_table[resource_name] = lst;
-      return true;
-    }
-    else // the resource is in the lock_table
-    {
-      //  check if the requesting transaction already in the list
-      //  when the request is for a lock upgrade
-      list<lockable_resource *>::iterator i;
-      for (i = lock_table[resource_name]->begin(); i != lock_table[resource_name]->end(); i++)
-      {
-        if ((*i)->getTxnId() == txn_id)
-        {
-          cout << "Lock Upgrade not available!!" << endl;
-          return false;
-        }
-      }
-
-      // Lock can be GRANTED when
-      //     => the requested lock is compatible with existing the locks
-      //     => if earlier requests are all granted
-
-      // when SHARED is requested
-      if (lock_type == lockType::SHARED)
-      {
-        lockable_resource *record;
-        // all existing ones are shared and granted
-        for (i = lock_table[resource_name]->begin(), record = *i;
-             i != lock_table[resource_name]->end() &&
-             record->getLockType() == lockType::SHARED &&
-             record->getStatus() == lockStatus::GRANTED;
-             i++, record = *i)
-          ;
-
-        // if reached the end, that is all existing are shared and granted
-        // no worries, grant this also
-        if (i == lock_table[resource_name]->end())
-          lock_status = lockStatus::GRANTED;
-        // else WAITING, taken care below
-      }
-
-      // WAIT if EXCLUSIVE is requested
-      // WAIT if a prior txn is still WAITING
-      lockable_resource *lr = new lockable_resource(txn_id, lock_type, lock_status);
-      lock_table[resource_name]->emplace_back(lr);
-    }
-  } // catch memory allocation exceptions
-  catch (bad_alloc &err)
-  {
-    cerr << "Memory Allocation Failed! " << err.what() << endl;
-    return false;
+    lockable_resource *lr = new lockable_resource(txn_id, lock_type, lockStatus::GRANTED);
+    list<lockable_resource *> *lst = new list<lockable_resource *>;
+    lst->emplace_back(lr);
+    lock_table[resource_name] = lst;
+    return true;
   }
-  return true; // there is nothing like lock returning false since in worst case it waits
+  else // the resource is in the lock_table
+  {
+
+    //  check if the requesting transaction already in the list, then the request is a lock upgrade
+    list<lockable_resource *>::iterator i;
+    for (i = lock_table[resource_name]->begin(); i != lock_table[resource_name]->end(); i++)
+    {
+      if ((*i)->getTxnId() == txn_id)
+      {
+        if ((*i)->getLockType() == lock_type)
+        {
+          cout << "The requested lock is already available!!" << endl;
+          return true;
+        }
+        cout << "Lock Upgrade not available!!" << endl;
+        return false;
+      }
+    }
+
+    // Lock can be GRANTED when
+    //      the requested lock is compatible with existing the locks
+    //      or if earlier requests are all granted
+    uint8_t lock_status = lockStatus::WAITING; // default is WAITING
+
+    // when SHARED is requested
+    if (lock_type == lockType::SHARED)
+    {
+      // if all existing ones are SHARED and GRANTED
+      for (i = lock_table[resource_name]->begin();
+           i != lock_table[resource_name]->end() &&
+           (*i)->getLockType() == lockType::SHARED &&
+           (*i)->getStatus() == lockStatus::GRANTED;
+           i++)
+        ;
+
+      // if reached the end, that is all existing are shared and granted
+      // no worries, grant this also
+      if (i == lock_table[resource_name]->end())
+        lock_status = lockStatus::GRANTED;
+      // else WAITING, taken care below
+    }
+
+    // WAIT if EXCLUSIVE is requested
+    // WAIT if a prior txn is still WAITING
+    lockable_resource *lr = new lockable_resource(txn_id, lock_type, lock_status);
+    lock_table[resource_name]->emplace_back(lr);
+  }
+  return true;
 }
 
-void print_locktable()
+void print()
 {
   cout << "-------------------------------------------------------" << endl;
   if (lock_table.empty())
@@ -287,7 +272,7 @@ int main()
         cout << "Lock error!" << endl;
       else
         cout << "Lock Successful!" << endl;
-      print_locktable();
+      print();
       break;
     case 2:
       cout << "Resource Name: ";
@@ -299,10 +284,10 @@ int main()
         cout << "Unlock error!" << endl;
       else
         cout << "Unlock Successful!" << endl;
-      print_locktable();
+      print();
       break;
     case 3:
-      print_locktable();
+      print();
       break;
     case 4:
       cout << "-------------------------------------------------------" << endl;
